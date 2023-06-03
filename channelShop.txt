@@ -1,6 +1,9 @@
 pragma solidity ^0.8.0;
 
-import "./IERC20.sol";
+interface IERC20 {
+    function transfer(address recipient, uint256 amount) external returns (bool);
+    // Add any other function declarations from the ERC-20 standard that you need
+}
 
 interface OtherContract {
     function setSubnodeRecord(bytes32 parentNode, string memory label, address newOwner, address resolver, uint64 ttl, uint32 fuses, uint64 expiry) external;
