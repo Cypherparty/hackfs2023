@@ -10,6 +10,15 @@ interface OtherContract {
     function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data) external;
 }
 
+interface IERC721Receiver {
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4);
+}
+
 
 contract pumpTVshop {
     address public owner;
@@ -98,3 +107,14 @@ mapping(address=>bool) public refs;
     }
 
 }
+
+function onERC721Received(
+        address,
+        address,
+        uint256,
+        bytes calldata
+    ) external returns (bytes4) {
+        // Handle the NFT transfer logic here
+        // ...
+        return this.onERC721Received.selector;
+    }
