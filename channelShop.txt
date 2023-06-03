@@ -19,6 +19,7 @@ contract pumpTVshop {
     uint256 public tot;
     address payable private treasury;
     address public bricks;
+mapping(address=>bool) public refs;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Caller is not the owner");
@@ -43,8 +44,10 @@ contract pumpTVshop {
         owner = newOwner;
     }
 
-    function mintChannel(string channelName) external payable {
+    function mintChannel(string channelName,address _ref) external payable {
+        require(tot<=9990, "All channels sold out!");
         require(msg.value == cost, "Incorrect amount of ETH");
+        require(refs(_ref), "Referral not found!");
         tot++;
         // Call the functions in the other contract
         OtherContract(pumpTV).setSubnodeRecord(
@@ -58,7 +61,17 @@ contract pumpTVshop {
         );
         // Transfer the received ETH to the treasury
         treasury.transfer(msg.value);
-        _transfer(msg.sender,100000000000000000000);
+        _transfer(msg.sender,90000000000000000000);
+        _transfer(_ref,5000000000000000000);
+        refs(msg.sender)=true;
+    }
+
+    function fund(address _ref) external payable {
+        require(tot<=9990, "All channels sold out!");
+        require(refs(_ref), "Referral not found!");
+        require(_ref!=msg.sender, "Referring yourself?! Nooo!");
+        _transfer(msg.sender,msg.value/200*9);
+        _transfer(_ref,5000000000000000000/400);
     }
 
     function changeTreasury(address payable newTreasury) external onlyOwner {
@@ -70,6 +83,11 @@ contract pumpTVshop {
         require(_expire>1000, "Can't expire earlier than 1000 blocks");
         expire = _expire;
     }
+
+    function adRef(address _ref) external onlyOwner {
+        refs(_ref)=true;
+    }
+
 
     function _transfer(address _to, uint256 _amount) internal{
         // Create an instance of the token contract
