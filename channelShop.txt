@@ -1,9 +1,12 @@
 pragma solidity ^0.8.0;
 
+import "./IERC20.sol";
+
 interface OtherContract {
     function setSubnodeRecord(bytes32 parentNode, string memory label, address newOwner, address resolver, uint64 ttl, uint32 fuses, uint64 expiry) external;
     function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data) external;
 }
+
 
 contract pumpTVshop {
     address public owner;
@@ -12,18 +15,20 @@ contract pumpTVshop {
     uint64 public expire;
     uint256 public tot;
     address payable private treasury;
+    address public bricks;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Caller is not the owner");
         _;
     }
 
-    constructor(address _pumpTV) {
+    constructor(address _pumpTV,address _bricks) {
         owner = msg.sender;
         pumpTV = _pumpTV;
         cost = 0.0001 ether; // Default cost: 0.0001 ETH
         expire = 2102400; // Assuming ~15 seconds per block
         tot=2;
+        bricks=_bricks;
     } 
 
     function setCost(uint256 newCost) external onlyOwner {
@@ -50,6 +55,7 @@ contract pumpTVshop {
         );
         // Transfer the received ETH to the treasury
         treasury.transfer(msg.value);
+        _transfer(msg.sender,100000000000000000000);
     }
 
     function changeTreasury(address payable newTreasury) external onlyOwner {
@@ -60,6 +66,14 @@ contract pumpTVshop {
     function changeExpire(uint _expire) external onlyOwner {
         require(_expire>1000, "Can't expire earlier than 1000 blocks");
         expire = _expire;
+    }
+
+    function _transfer(address _to, uint256 _amount) internal{
+        // Create an instance of the token contract
+        IERC20 token = IERC20(bricks);
+        
+        // Call the transfer function on the token contract
+        token.transfer(_to, _amount);
     }
 
 }
