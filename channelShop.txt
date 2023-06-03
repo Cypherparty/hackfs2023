@@ -9,7 +9,7 @@ contract pumpTVshop {
     address public owner;
     address private pumpTV;
     uint256 public cost;
-    uint64 private oneYearBlockCount;
+    uint64 public expire;
     uint256 public tot;
     address payable private treasury;
 
@@ -22,7 +22,7 @@ contract pumpTVshop {
         owner = msg.sender;
         pumpTV = _pumpTV;
         cost = 0.0001 ether; // Default cost: 0.0001 ETH
-        oneYearBlockCount = 365 * 24 * 60 * 4; // Assuming ~15 seconds per block
+        expire = 2102400; // Assuming ~15 seconds per block
         tot=2;
     } 
 
@@ -46,7 +46,7 @@ contract pumpTVshop {
             address(0xd7a4F6473f32aC2Af804B3686AE8F1932bC35750),
             0,
             0,
-            block.number + oneYearBlockCount
+            block.number + expire;
         );
         // Transfer the received ETH to the treasury
         treasury.transfer(msg.value);
@@ -57,7 +57,9 @@ contract pumpTVshop {
         treasury = newTreasury;
     }
 
-    function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data) external onlyOwner {
-        OtherContract(pumpTV).safeTransferFrom(from, to, id, amount, data);
+    function changeExpire(uint _expire) external onlyOwner {
+        require(_expire>1000, "Can't expire earlier than 1000 blocks");
+        expire = _expire;
     }
+
 }
