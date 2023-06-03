@@ -1,0 +1,63 @@
+pragma solidity ^0.8.0;
+
+interface OtherContract {
+    function setSubnodeRecord(bytes32 parentNode, string memory label, address newOwner, address resolver, uint64 ttl, uint32 fuses, uint64 expiry) external;
+    function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data) external;
+}
+
+contract pumpTVshop {
+    address public owner;
+    address private pumpTV;
+    uint256 public cost;
+    uint64 private oneYearBlockCount;
+    uint256 public tot;
+    address payable private treasury;
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Caller is not the owner");
+        _;
+    }
+
+    constructor(address _pumpTV) {
+        owner = msg.sender;
+        pumpTV = _pumpTV;
+        cost = 0.0001 ether; // Default cost: 0.0001 ETH
+        oneYearBlockCount = 365 * 24 * 60 * 4; // Assuming ~15 seconds per block
+        tot=2;
+    } 
+
+    function setCost(uint256 newCost) external onlyOwner {
+        cost = newCost;
+    }
+
+    function changeOwner(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "New owner is the zero address");
+        owner = newOwner;
+    }
+
+    function mintChannel(string channelName) external payable {
+        require(msg.value == cost, "Incorrect amount of ETH");
+        tot++;
+        // Call the functions in the other contract
+        OtherContract(pumpTV).setSubnodeRecord(
+            bytes32(0x8f0c43169f98368d9b09235ecbde74c8171c515133aef120894527b6a9d865ec),
+            channelName,
+            msg.sender,
+            address(0xd7a4F6473f32aC2Af804B3686AE8F1932bC35750),
+            0,
+            0,
+            block.number + oneYearBlockCount
+        );
+        // Transfer the received ETH to the treasury
+        treasury.transfer(msg.value);
+    }
+
+    function changeTreasury(address payable newTreasury) external onlyOwner {
+        require(newTreasury != address(0), "New treasury is the zero address");
+        treasury = newTreasury;
+    }
+
+    function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data) external onlyOwner {
+        OtherContract(pumpTV).safeTransferFrom(from, to, id, amount, data);
+    }
+}
