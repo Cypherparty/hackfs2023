@@ -11,7 +11,7 @@ interface OtherContract {
     function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data) external;
 }
 
-interface IERC721Receiver {
+interface IERC1155Receiver {
     function onERC721Received(
         address operator,
         address from,
@@ -101,13 +101,13 @@ uint64 public expire;
 
     function _transfer(address _to, uint256 _amount) internal{
         // Create an instance of the token contract
-        IERC20 token = IERC20(bricks);
+        //IERC20 token = IERC20(bricks);
         
         // Call the transfer function on the token contract
-        token.transfer(_to, _amount);
+        //token.transfer(_to, _amount);
     }
 
-    function onERC721Received(
+    function onERC1155Received(
         address,
         address,
         uint256,
