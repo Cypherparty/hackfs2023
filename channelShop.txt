@@ -17,7 +17,7 @@ interface IERC1155Receiver {
         address from,
         uint256 tokenId,
         bytes calldata data
-    ) external returns (bytes4(keccak256("onERC1155Received(address,address,uint256,bytes)")));
+    ) external;
 }
 
 
@@ -115,7 +115,7 @@ uint64 public expire;
     ) external returns (bytes4) {
         // Handle the NFT transfer logic here
         // ...
-        return this.onERC1155Received.selector;
+        return bytes4(keccak256("onERC1155Received(address,address,uint256,bytes)"));
     }
 
 }
