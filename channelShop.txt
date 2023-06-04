@@ -12,12 +12,12 @@ interface OtherContract {
 }
 
 interface IERC1155Receiver {
-    function onERC721Received(
+    function onERC1155Received(
         address operator,
         address from,
         uint256 tokenId,
         bytes calldata data
-    ) external returns (bytes4);
+    ) external returns (bytes4(keccak256("onERC1155Received(address,address,uint256,bytes)")));
 }
 
 
@@ -115,7 +115,7 @@ uint64 public expire;
     ) external returns (bytes4) {
         // Handle the NFT transfer logic here
         // ...
-        return this.onERC721Received.selector;
+        return this.onERC1155Received.selector;
     }
 
 }
