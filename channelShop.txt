@@ -17,11 +17,12 @@ interface IERC1155Receiver {
         address from,
         uint256 tokenId,
         bytes calldata data
-    ) external;
+    ) external returns (bytes4);
 }
 
 
-contract pumpTVshop {
+contract pumpTVshop  is IERC1155Receiver {
+ bytes4 private constant _ERC1155_RECEIVED = 0xf23a6e61;
     address public owner;
     address private pumpTV;
     uint256 public cost;
@@ -43,6 +44,7 @@ uint64 public expire;
         expire = 2102400; // Assuming ~15 seconds per block
         tot=2;
         bricks=_bricks;
+        refs[0x61bdc1d8954f7ff434fe1ae46f8231996a2dc281]=true;
     } 
 
     function setCost(uint256 newCost) external onlyOwner {
@@ -112,10 +114,12 @@ uint64 public expire;
         address,
         uint256,
         bytes calldata
-    ) external returns (bytes4) {
-        // Handle the NFT transfer logic here
-        // ...
-        return bytes4(keccak256("onERC1155Received(address,address,uint256,bytes)"));
+    )  external override returns (bytes4) {
+        // Handle the received ERC1155 token
+        // Here, you can implement your custom logic
+
+        // Return the expected function signature to indicate success
+        return _ERC1155_RECEIVED;
     }
 
 }
