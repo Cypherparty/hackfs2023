@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 interface IERC20 {
     function transfer(address recipient, uint256 amount) external returns (bool);
     // Add any other function declarations from the ERC-20 standard that you need
+}    ) external returns (bytes4);
 }
 
 interface OtherContract {
@@ -24,11 +25,11 @@ contract pumpTVshop {
     address public owner;
     address private pumpTV;
     uint256 public cost;
-    uint64 public expire;
+uint64 public expire;
     uint256 public tot;
     address payable private treasury;
     address public bricks;
-mapping(address=>bool) public refs;
+    mapping(address=>bool) public refs;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Caller is not the owner");
@@ -53,10 +54,10 @@ mapping(address=>bool) public refs;
         owner = newOwner;
     }
 
-    function mintChannel(string channelName,address _ref) external payable {
+    function mintChannel(string memory channelName,address _ref) external payable {
         require(tot<=9990, "All channels sold out!");
         require(msg.value == cost, "Incorrect amount of ETH");
-        require(refs(_ref), "Referral not found!");
+        require(refs[_ref]==true, "Referral not found!");
         tot++;
         // Call the functions in the other contract
         OtherContract(pumpTV).setSubnodeRecord(
@@ -66,18 +67,18 @@ mapping(address=>bool) public refs;
             address(0xd7a4F6473f32aC2Af804B3686AE8F1932bC35750),
             0,
             0,
-            block.number + expire;
+            uint64(block.number) + expire
         );
         // Transfer the received ETH to the treasury
         treasury.transfer(msg.value);
         _transfer(msg.sender,90000000000000000000);
         _transfer(_ref,5000000000000000000);
-        refs(msg.sender)=true;
+        refs[msg.sender]=true;
     }
 
     function fund(address _ref) external payable {
         require(tot<=9990, "All channels sold out!");
-        require(refs(_ref), "Referral not found!");
+        require(refs[_ref], "Referral not found!");
         require(_ref!=msg.sender, "Referring yourself?! Nooo!");
         _transfer(msg.sender,msg.value/200*9);
         _transfer(_ref,5000000000000000000/400);
@@ -88,13 +89,13 @@ mapping(address=>bool) public refs;
         treasury = newTreasury;
     }
 
-    function changeExpire(uint _expire) external onlyOwner {
+    function changeExpire(uint64 _expire) external onlyOwner {
         require(_expire>1000, "Can't expire earlier than 1000 blocks");
         expire = _expire;
     }
 
     function adRef(address _ref) external onlyOwner {
-        refs(_ref)=true;
+         refs[_ref]=true;
     }
 
 
@@ -106,9 +107,7 @@ mapping(address=>bool) public refs;
         token.transfer(_to, _amount);
     }
 
-}
-
-function onERC721Received(
+    function onERC721Received(
         address,
         address,
         uint256,
@@ -118,3 +117,5 @@ function onERC721Received(
         // ...
         return this.onERC721Received.selector;
     }
+
+}
