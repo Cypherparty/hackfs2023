@@ -19,6 +19,7 @@ interface IERC1155Receiver {
         address operator,
         address from,
         uint256 tokenId,
+        uint256 amount,
         bytes calldata data
     ) external returns (bytes4);
 }
@@ -34,6 +35,8 @@ uint64 public expire;
     address payable private treasury;
     address public bricks;
     mapping(address=>bool) public refs;
+    mapping(string=>uint8) public channelType; //1 public/2 private/
+mapping(uint256=>address) public channelOwner;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Caller is not the owner");
@@ -59,21 +62,15 @@ uint64 public expire;
         owner = newOwner;
     }
 
-    function mintChannel(string memory channelName,address _ref) external payable {
+    function mintChannel(string memory channelName,address _ref,uint8 _channelType,uint256 _postCost,uint256 _channelBadge) external payable {
         require(tot<=9990, "All channels sold out!");
         require(msg.value == cost, "Incorrect amount of ETH");
         require(refs[_ref]==true, "Referral not found!");
+        require(channelType<1, "Channel already existing!");
+
         tot++;
         // Call the functions in the other contract
-        OtherContract(pumpTV).setSubnodeRecord(
-            bytes32(0x8f0c43169f98368d9b09235ecbde74c8171c515133aef120894527b6a9d865ec),
-            channelName,
-            msg.sender,
-            address(0xd7a4F6473f32aC2Af804B3686AE8F1932bC35750),
-            0,
-            0,
-            uint64(block.number) + expire
-        );
+        _createSubNode(pumpTV,channelName)
         // Transfer the received ETH to the treasury
         treasury.transfer(msg.value);
         _transfer(msg.sender,90000000000000000000);
@@ -116,16 +113,28 @@ uint64 public expire;
         IERC1155(0x114D4603199df73e7D157787f8778E21fCd13066).safeTransferFrom(address(this), owner, 64702402539115767006434185481779354612409945082213457361368789707781916091884, 1, "");
     }
 
+    function _createSubNode(address wrapper,string name) internal returns (bool){
+            OtherContract(wrapper).setSubnodeRecord(
+            bytes32(0x8f0c43169f98368d9b09235ecbde74c8171c515133aef120894527b6a9d865ec),
+            name,
+            msg.sender,
+            address(0xd7a4F6473f32aC2Af804B3686AE8F1932bC35750),
+            0,
+            0,
+            uint64(block.number) + expire
+        );
+    }
+
     function onERC1155Received(
-        address,
-        address,
-        uint256,
+        address operator,
+        address from,
+        uint256 id,
+        uint256 amount,
         bytes calldata
     )  external override returns (bytes4) {
-        // Handle the received ERC1155 token
-        // Here, you can implement your custom logic
-
-        // Return the expected function signature to indicate success
+        require(msg.sender==owner, "sorry I don't like your nft");
+        channelOwner[id]=from;
+	_createSubNode(address wrapper,string name)
         return _ERC1155_RECEIVED;
     }
 
