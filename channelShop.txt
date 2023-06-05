@@ -26,30 +26,29 @@ interface IERC1155Receiver {
 
 
 contract pumpTVshop  is IERC1155Receiver {
- bytes4 private constant _ERC1155_RECEIVED = 0xf23a6e61;
+    bytes4 private constant _ERC1155_RECEIVED = 0xf23a6e61;
     address public owner;
     address private pumpTV;
     uint256 public cost;
-uint64 public expire;
-    uint256 public tot;
+    uint64 public expire;
+    uint256 private tot;
     address payable private treasury;
-    address public bricks;
-    mapping(address=>bool) public refs;
+    mapping(address=>bool) private refs;
     mapping(string=>uint8) public channelType; //1 public/2 private/
-mapping(uint256=>address) public channelOwner;
+    mapping(uint256=>address) private channelOwner;
+    mapping(address=>uint8) public refJob;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Caller is not the owner");
         _;
     }
 
-    constructor(address _pumpTV,address _bricks) {
+    constructor(address _pumpTV) {
         owner = msg.sender;
         pumpTV = _pumpTV;
         cost = 0.0001 ether; // Default cost: 0.0001 ETH
         expire = 2102400; // Assuming ~15 seconds per block
         tot=2;
-        bricks=_bricks;
         refs[0x61bdc1d8954f7ff434fe1ae46f8231996a2dc281]=true;
     } 
 
@@ -64,7 +63,7 @@ mapping(uint256=>address) public channelOwner;
 
     function mintChannel(string memory channelName,address _ref,uint8 _channelType,uint256 _postCost,uint256 _channelBadge) external payable {
         require(tot<=9990, "All channels sold out!");
-        require(msg.value == cost, "Incorrect amount of ETH");
+        require(msg.value >= cost, "Incorrect amount of ETH");
         require(refs[_ref]==true, "Referral not found!");
         require(channelType<1, "Channel already existing!");
 
@@ -73,17 +72,13 @@ mapping(uint256=>address) public channelOwner;
         _createSubNode(pumpTV,channelName)
         // Transfer the received ETH to the treasury
         treasury.transfer(msg.value);
-        _transfer(msg.sender,90000000000000000000);
-        _transfer(_ref,5000000000000000000);
         refs[msg.sender]=true;
     }
 
-    function fund(address _ref) external payable {
+    function mintMeme(uint256 channelId,string memory memeName) external payable {
         require(tot<=9990, "All channels sold out!");
-        require(refs[_ref], "Referral not found!");
-        require(_ref!=msg.sender, "Referring yourself?! Nooo!");
-        _transfer(msg.sender,msg.value/200*9);
-        _transfer(_ref,5000000000000000000/400);
+        _createSubNode(pumpTV,memeName)
+        channelOwners[channelId].transfer(msg.value);
     }
 
     function changeTreasury(address payable newTreasury) external onlyOwner {
@@ -98,15 +93,6 @@ mapping(uint256=>address) public channelOwner;
 
     function adRef(address _ref) external onlyOwner {
          refs[_ref]=true;
-    }
-
-
-    function _transfer(address _to, uint256 _amount) internal{
-        // Create an instance of the token contract
-        //IERC20 token = IERC20(bricks);
-        
-        // Call the transfer function on the token contract
-        //token.transfer(_to, _amount);
     }
 
     function transferDomain() external {
