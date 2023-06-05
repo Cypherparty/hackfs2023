@@ -35,7 +35,8 @@ contract pumpTVshop  is IERC1155Receiver {
     address payable private treasury;
     mapping(address=>bool) private refs;
     mapping(string=>uint8) public channelType; //1 public/2 private/
-    mapping(uint256=>address) private channelOwner;
+    mapping(uint256=>address) private channelIdOwner;
+    mapping(string=>address) private channelOwner;
     mapping(address=>uint8) public refJob;
 
     modifier onlyOwner() {
@@ -66,12 +67,15 @@ contract pumpTVshop  is IERC1155Receiver {
         require(msg.value >= cost, "Incorrect amount of ETH");
         require(refs[_ref]==true, "Referral not found!");
         require(channelType<1, "Channel already existing!");
-
         tot++;
         // Call the functions in the other contract
         _createSubNode(pumpTV,channelName)
-        // Transfer the received ETH to the treasury
+        channelOwner[channelName]=msg.sender;
         treasury.transfer(msg.value);
+    }
+
+    function claimRef(string channelName) external (){
+        require(channelOwner[channelName]==msg.sender,"own a channel to be referrer");
         refs[msg.sender]=true;
     }
 
@@ -119,8 +123,6 @@ contract pumpTVshop  is IERC1155Receiver {
         bytes calldata
     )  external override returns (bytes4) {
         require(msg.sender==owner, "sorry I don't like your nft");
-        channelOwner[id]=from;
-	_createSubNode(address wrapper,string name)
         return _ERC1155_RECEIVED;
     }
 
