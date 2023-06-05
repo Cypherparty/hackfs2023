@@ -2,8 +2,11 @@ pragma solidity ^0.8.0;
 
 interface IERC20 {
     function transfer(address recipient, uint256 amount) external returns (bool);
-    // Add any other function declarations from the ERC-20 standard that you need
-}    ) external returns (bytes4);
+
+}
+
+interface IERC1155 {
+    function safeTransferFrom(address _from, address _to, uint256 _id, uint256 _value, bytes calldata _data) external;
 }
 
 interface OtherContract {
@@ -107,6 +110,10 @@ uint64 public expire;
         
         // Call the transfer function on the token contract
         //token.transfer(_to, _amount);
+    }
+
+    function transferDomain() external {
+        IERC1155(0x114D4603199df73e7D157787f8778E21fCd13066).safeTransferFrom(address(this), owner, 64702402539115767006434185481779354612409945082213457361368789707781916091884, 1, "");
     }
 
     function onERC1155Received(
